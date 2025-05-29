@@ -10,6 +10,9 @@ compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 enabled = true
 head_sampling_rate = 1 
 
+[placement]
+mode = "smart"
+
 # ------------------------------
 # --- Production environment ---
 # ------------------------------
