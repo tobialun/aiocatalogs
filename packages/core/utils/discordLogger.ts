@@ -72,17 +72,17 @@ class DiscordLogger {
 
       const embed = {
         title: '🔔 AIOCatalogs Error Log',
-        description: message,
+        description: `\`\`\`${message}\`\`\``,
         color: 0xff0000, // Red color for errors
         fields: [
           {
-            name: 'Timestamp',
-            value: timestamp,
+            name: 'User ID',
+            value: userIdStr ? `[${this.userId}]` : 'System Log',
             inline: true,
           },
         ],
         footer: {
-          text: userIdStr ? `User ID: ${this.userId}` : 'System Log',
+          text: `Timestamp: ${timestamp}`,
         },
       };
 
