@@ -34,7 +34,7 @@ export function getRPDBApiConfigHTML(userId: string, apiKey: string): string {
             </label>
             <div class="relative">
               <input 
-                type="text" 
+                type="password" 
                 id="rpdbApiKey" 
                 name="apiKey" 
                 autocomplete="off"
