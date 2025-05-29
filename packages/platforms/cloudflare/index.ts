@@ -102,6 +102,12 @@ app.get('/configure/default', async c => {
   return c.redirect('/configure?noRedirect=true');
 });
 
+app.get('/test/500', async c => {
+  // Test route to trigger a 500 error
+  logger.error('Test 500 error triggered');
+  return c.json({ error: 'Test 500 error' }, 500);
+});
+
 // Add redirection route for JSON-formatted userId parameter
 app.get('/:jsonParams/configure', async c => {
   try {
