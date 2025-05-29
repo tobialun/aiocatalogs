@@ -10,6 +10,9 @@ compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 enabled = true
 head_sampling_rate = 1 
 
+[placement]
+mode = "smart"
+
 # ------------------------------
 # --- Production environment ---
 # ------------------------------
@@ -27,6 +30,10 @@ LOG_LEVEL = "info" # debug, info, warn, error, or none
 LOG_ENABLE_TIMESTAMPS = true
 LOG_TIMESTAMP_FORMAT = "dd.MM.yyyy HH:mm:ss"
 LOG_TIMEZONE = "Europe/Berlin"
+
+# DISCORD_WEBHOOK_URL = "" # Add encrypted value to your Cloudflare worker instance
+DISCORD_BOT_NAME = "AIOCatalogs - Error Logger" # Optional: Custom name for the bot
+DISCORD_BOT_AVATAR = "https://i.imgur.com/fRPYeIV.png" # Optional: Custom avatar URL
 
 # D1-Database for the production environment
 [[d1_databases]]
@@ -52,6 +59,10 @@ LOG_LEVEL = "debug" # debug, info, warn, error, or none
 LOG_ENABLE_TIMESTAMPS = true
 LOG_TIMESTAMP_FORMAT = "dd.MM.yyyy HH:mm:ss"
 LOG_TIMEZONE = "Europe/Berlin"
+
+# DISCORD_WEBHOOK_URL = "" # Add encrypted value to your Cloudflare worker instance
+DISCORD_BOT_NAME = "AIOCatalogs - Error Logger" # Optional: Custom name for the bot
+DISCORD_BOT_AVATAR = "https://i.imgur.com/fRPYeIV.png" # Optional: Custom avatar URL
 
 # D1-Database for the development environment
 [[env.dev.d1_databases]]

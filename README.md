@@ -169,6 +169,10 @@ You can configure the addon using environment variables:
   - `LOG_TIMESTAMP_FORMAT`: Timestamp format (default: dd.MM.yyyy HH:mm:ss)
   - `LOG_TIMEZONE`: Timezone for timestamps (default: Europe/Berlin)
 
+  - `DISCORD_WEBHOOK_URL`: Discord webhook URL for notifications - Add encrypted value to your Cloudflare worker instance (default: null - which means no notifications will be sent)
+  - `DISCORD_BOT_NAME`: Discord bot name (default: AIOCatalogs - Error Logger)
+  - `DISCORD_BOT_AVATAR`: Discord bot avatar (default: null)
+
 ### How do I add new catalog addons?
 
 1. Open the addon's web interface at your installation URL

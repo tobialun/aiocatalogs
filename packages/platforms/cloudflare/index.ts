@@ -10,6 +10,7 @@ import { logger, initLogger } from '../../core/utils/logger';
 import { appConfig } from './appConfig';
 import { fetchMDBListCatalog, fetchListDetails } from '../../core/utils/mdblist';
 import { saveRPDBConfig } from '../../api/routes/rpdbRoutes';
+import { initDiscordLogger } from '../../core/utils/discordLogger';
 
 // Configuration page (imported from separate file)
 import {
@@ -30,11 +31,49 @@ import {
   saveMDBListConfig,
 } from '../../api/routes/mdblistRoutes';
 
-// Initialize logger with appConfig
-initLogger(appConfig);
-
 // Create Hono App with Bindings type parameter
 const app = new Hono<{ Bindings: Env }>();
+
+// Initialization state tracking
+let isInitialized = false;
+
+/**
+ * Initialize application services
+ * This ensures we only try to initialize services once at startup
+ */
+async function initializeServices() {
+  if (isInitialized) return;
+
+  try {
+    // Initialize core logger
+    initLogger(appConfig);
+
+    // Initialize Discord logger if configured
+    if (appConfig.discord.webhookUrl) {
+      await initDiscordLogger({
+        webhookUrl: appConfig.discord.webhookUrl,
+        botName: appConfig.discord.botName,
+        botAvatar: appConfig.discord.botAvatar,
+      });
+    } else {
+      logger.warn('Discord logging is disabled - no webhook URL configured');
+    }
+
+    isInitialized = true;
+    logger.info('Application services initialized successfully');
+  } catch (error) {
+    logger.error('Failed to initialize application services:', error);
+    throw error; // Re-throw to handle in the request handler
+  }
+}
+
+// Main middleware to ensure initialization
+app.use('*', async (c, next) => {
+  if (!isInitialized) {
+    await initializeServices();
+  }
+  await next();
+});
 
 // Enable CORS middleware
 app.use('*', cors());
@@ -56,6 +95,17 @@ const initConfigManager = (c: any) => {
 app.get('/', async c => {
   // Redirect from / to /configure
   return c.redirect('/configure');
+});
+
+app.get('/configure/default', async c => {
+  // Redirect from /configure/default to /configure
+  return c.redirect('/configure?noRedirect=true');
+});
+
+app.get('/test/500', async c => {
+  // Test route to trigger a 500 error
+  logger.error('Test 500 error triggered');
+  return c.json({ error: 'Test 500 error' }, 500);
 });
 
 // Add redirection route for JSON-formatted userId parameter
@@ -152,7 +202,8 @@ app.post('/configure/load', async c => {
 // Configuration endpoints
 app.get('/configure/:userId', async c => {
   initConfigManager(c);
-  return getConfigPage(c);
+  const userId = c.req.param('userId');
+  return withUserContext(userId, async () => getConfigPage(c));
 });
 
 app.post('/configure/:userId/add', async c => {
@@ -431,18 +482,20 @@ app.get('/:params/manifest.json', async c => {
   }
 
   if (c.env && c.env.DB) {
-    try {
-      const addonInterface = await getAddonInterface(userId, c.env.DB as D1Database);
+    return withUserContext(userId, async () => {
+      try {
+        const addonInterface = await getAddonInterface(userId, c.env.DB as D1Database);
 
-      c.header('Content-Type', 'application/json');
-      c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
-      c.header('Pragma', 'no-cache');
-      c.header('Expires', '0');
-      return c.json(addonInterface.manifest);
-    } catch (error) {
-      console.error('Error generating manifest:', error);
-      return c.json({ error: 'Failed to generate manifest' }, 500);
-    }
+        c.header('Content-Type', 'application/json');
+        c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        c.header('Pragma', 'no-cache');
+        c.header('Expires', '0');
+        return c.json(addonInterface.manifest);
+      } catch (error) {
+        console.error('Error generating manifest:', error);
+        return c.json({ error: 'Failed to generate manifest' }, 500);
+      }
+    });
   } else {
     return c.json({ error: 'Database not available' }, 500);
   }
@@ -468,29 +521,31 @@ app.get('/:params/:resource/:type/:id\\.json', async c => {
   }
 
   if (c.env && c.env.DB) {
-    try {
-      const addonInterface = await getAddonInterface(userId, c.env.DB as D1Database);
+    return withUserContext(userId, async () => {
+      try {
+        const addonInterface = await getAddonInterface(userId, c.env.DB as D1Database);
 
-      // Handle different resource types
-      let result;
-      if (resource === 'catalog') {
-        result = await addonInterface.catalog({ type, id });
-      } else if (resource === 'meta') {
-        result = await addonInterface.meta();
-      } else if (resource === 'stream') {
-        result = await addonInterface.stream();
-      } else {
-        return c.json({ error: 'Resource not supported' }, 404);
+        // Handle different resource types
+        let result;
+        if (resource === 'catalog') {
+          result = await addonInterface.catalog({ type, id });
+        } else if (resource === 'meta') {
+          result = await addonInterface.meta();
+        } else if (resource === 'stream') {
+          result = await addonInterface.stream();
+        } else {
+          return c.json({ error: 'Resource not supported' }, 404);
+        }
+
+        c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        c.header('Pragma', 'no-cache');
+        c.header('Expires', '0');
+        return c.json(result);
+      } catch (error) {
+        console.error(`Error in ${resource} endpoint:`, error);
+        return c.json({ error: 'Internal server error' }, 500);
       }
-
-      c.header('Cache-Control', 'no-cache, no-store, must-revalidate');
-      c.header('Pragma', 'no-cache');
-      c.header('Expires', '0');
-      return c.json(result);
-    } catch (error) {
-      console.error(`Error in ${resource} endpoint:`, error);
-      return c.json({ error: 'Internal server error' }, 500);
-    }
+    });
   } else {
     return c.json({ error: 'Database not available' }, 500);
   }
@@ -544,25 +599,27 @@ app.get('/configure/:userId/mdblist/:listId/catalog/:type/:id.json', async c => 
   const userId = c.req.param('userId');
 
   if (c.env && c.env.DB) {
-    try {
-      // Verify that the user exists
-      configManager.setDatabase(c.env.DB);
-      const exists = await configManager.userExists(userId);
-      if (!exists) {
-        return c.json({ error: 'User not found' }, 404);
+    return withUserContext(userId, async () => {
+      try {
+        // Verify that the user exists
+        configManager.setDatabase(c.env.DB);
+        const exists = await configManager.userExists(userId);
+        if (!exists) {
+          return c.json({ error: 'User not found' }, 404);
+        }
+
+        const addonInterface = await getAddonInterface(userId, c.env.DB as D1Database);
+
+        // Use the main catalog handler with the MDBList ID format that our addon understands
+        const catalogId = `mdblist_${listId}`;
+        const result = await addonInterface.handleCatalog(userId, { type, id: catalogId });
+
+        return c.json(result);
+      } catch (error) {
+        console.error(`Error serving MDBList catalog: ${error}`);
+        return c.json({ error: 'Failed to generate catalog' }, 500);
       }
-
-      const addonInterface = await getAddonInterface(userId, c.env.DB as D1Database);
-
-      // Use the main catalog handler with the MDBList ID format that our addon understands
-      const catalogId = `mdblist_${listId}`;
-      const result = await addonInterface.handleCatalog(userId, { type, id: catalogId });
-
-      return c.json(result);
-    } catch (error) {
-      console.error(`Error serving MDBList catalog: ${error}`);
-      return c.json({ error: 'Failed to generate catalog' }, 500);
-    }
+    });
   } else {
     return c.json({ error: 'Database not available' }, 500);
   }
@@ -578,6 +635,21 @@ app.onError((err, c) => {
   console.error('Error:', err);
   return c.text('Internal Server Error', 500);
 });
+
+// User context manager
+async function withUserContext<T>(userId: string, fn: () => Promise<T>): Promise<T> {
+  // Only set user ID if the logger supports it
+  if (typeof logger.setUserId === 'function') {
+    logger.setUserId(userId);
+  }
+  try {
+    return await fn();
+  } finally {
+    if (typeof logger.clearUserId === 'function') {
+      logger.clearUserId();
+    }
+  }
+}
 
 // Worker export
 export default app;
