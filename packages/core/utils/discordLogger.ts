@@ -77,7 +77,7 @@ class DiscordLogger {
         fields: [
           {
             name: 'User ID',
-            value: userIdStr ? `[${this.userId}]` : 'System Log',
+            value: userIdStr ? `${this.userId}` : 'System Log',
             inline: true,
           },
         ],
