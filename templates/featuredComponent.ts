@@ -39,9 +39,9 @@ export function getFeaturedBannerHTML(): string {
         currentIndex = (currentIndex + 1) % banners.length;
         banners[currentIndex].classList.add('active');
       }
-      
-      // Rotate every 30 seconds
-      setInterval(rotateBanners, 10000);
+
+      // Rotate every 15 seconds
+      setInterval(rotateBanners, 15000);
     }
     
     // Initialize after DOM is loaded
