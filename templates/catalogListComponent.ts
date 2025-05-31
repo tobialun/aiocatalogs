@@ -15,6 +15,7 @@ export function getCatalogListHTML(userId: string, catalogs: any[]): string {
       const isRandomized = catalog.randomize === true;
       const displayName = catalog.customName || catalog.name;
       const isCustomNamed = !!catalog.customName;
+      const TMDB_ADDON_ID = 'tmdb-addon';
 
       return `
     <div class="catalog-item flex items-start gap-3 group" data-draggable="true" data-catalog-id="${catalog.id}" data-catalog-index="${index}">
@@ -57,10 +58,17 @@ export function getCatalogListHTML(userId: string, catalogs: any[]): string {
             `
                 : ''
             }
+
+            ${
+              catalog.id !== TMDB_ADDON_ID
+                ? `
             <button type="button" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 px-3 py-2" onclick="toggleRenameForm('${catalog.id}')">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
               Rename
             </button>
+            `
+                : ''
+            }
             <form method="POST" action="/configure/${userId}/toggleRandomize" class="flex-shrink-0">
               <input type="hidden" name="catalogId" value="${catalog.id}">
               <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${isRandomized ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'} h-9 px-3 py-2">
@@ -77,6 +85,19 @@ export function getCatalogListHTML(userId: string, catalogs: any[]): string {
             </form>
           </div>
         </div>
+        ${
+          catalog.id === TMDB_ADDON_ID
+            ? `
+        <div class="mt-4 bg-destructive/10 rounded px-3 py-2 border border-destructive"> 
+          <p class="text-sm text-muted-foreground">
+            <strong class="text-foreground">Important:</strong> You must have the <a target="_blank" class="text-primary hover:underline" href="https://94c8cb9f702d-tmdb-addon.baby-beamup.club/">TMDB addon</a> installed on your streaming platform <strong class="text-foreground">without</strong> activated catalogs for this catalog to work properly, as AIOCatalogs itself does not provide metadata.<br>
+            You can install the configured TMDB addon by copy pasting the link below:<br>
+            <a target="_blank" href="https://tmdb.elfhosted.com/%7B%22language%22%3A%22en-US%22%2C%22streaming%22%3A%5B%5D%2C%22catalogs%22%3A%5B%5D%2C%22searchEnabled%22%3A%22false%22%7D/manifest.json" class="text-primary hover:underline">TMDB addon manifest with all catalogs turned off</a>
+          </p>
+        </div>
+        `
+            : ''
+        }
         <div id="rename-form-${catalog.id}" class="rename-form hidden mt-2 p-3 border border-border rounded-md bg-muted/30">
           <form method="POST" action="/configure/${userId}/rename" class="flex items-center gap-2" accept-charset="UTF-8">
             <input type="hidden" name="catalogId" value="${catalog.id}">

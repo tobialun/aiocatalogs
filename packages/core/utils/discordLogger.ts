@@ -67,8 +67,27 @@ class DiscordLogger {
     if (!this.isEnabled) return;
 
     try {
+      const timestamp = this.formatTimestamp();
+      const userIdStr = this.userId ? `[${this.userId}] ` : '';
+
+      const embed = {
+        title: '🔔 AIOCatalogs Error Log',
+        description: `\`\`\`${message}\`\`\``,
+        color: 0xff0000, // Red color for errors
+        fields: [
+          {
+            name: 'User ID',
+            value: userIdStr ? `${this.userId}` : 'System Log',
+            inline: true,
+          },
+        ],
+        footer: {
+          text: `Timestamp: ${timestamp}`,
+        },
+      };
+
       const payload = {
-        content: message,
+        embeds: [embed],
         username: this.config.botName,
         avatar_url: this.config.botAvatar,
         channel_id: this.config.channelId,
@@ -97,17 +116,14 @@ class DiscordLogger {
   public async logError(message: string, error?: any): Promise<void> {
     if (!this.isEnabled) return;
 
-    const timestamp = this.formatTimestamp();
-    const userIdStr = this.userId ? `[${this.userId}] ` : '';
-
-    let formattedMessage = `[${timestamp}] ${userIdStr}\n\`\`\`\n${message}\n\`\`\``;
+    let formattedMessage = message;
 
     if (error) {
       const errorDetails =
         error instanceof Error
           ? `${error.name}: ${error.message}\n${error.stack}`
           : JSON.stringify(error, null, 2);
-      formattedMessage += `\n\`\`\`\n${errorDetails}\n\`\`\``;
+      formattedMessage += `\n\n**Error Details:**\n\`\`\`\n${errorDetails}\n\`\`\``;
     }
 
     await this.sendToDiscord(formattedMessage);

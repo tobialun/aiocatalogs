@@ -35,7 +35,7 @@ export function getMDBListApiConfigHTML(userId: string, apiKey: string): string 
             </label>
             <div class="relative">
               <input
-                type="text"
+                type="password"
                 id="apiKey"
                 name="apiKey"
                 value="${apiKey}"

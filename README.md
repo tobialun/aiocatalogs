@@ -38,6 +38,7 @@
 - Development with Wrangler CLI
 - Rate limiting to protect API endpoints
 - Enhanced logging capabilities for better debugging and monitoring
+- Discord error logging for real-time issue tracking
 
 ### 🔍 Enhanced Catalog Management
 
@@ -49,11 +50,13 @@
 - Add MDBList catalogs with one click through direct API integration (requires MDBList API key)
 - See RPDB ratings on posters (requires RPDB API key)
 - Advanced catalog organization tools
+- TMDB (Elfhosted addon) support for additional content sources (requires TMDB Elfhosted addon)
 
 ### 🎯 Enhanced Content Presentation
 
 - **MDBList Integration**: Seamlessly integrate with MDBList catalogs by simply adding your API key. Browse and import any of your MDBList collections directly within the configuration interface.
 - **RPDB Rating Posters**: Display movie and TV show ratings directly on the posters for quick visual reference. Ratings are fetched from reliable sources to help you make better viewing decisions at a glance.
+- **Custom Catalogs**: Create and manage your own catalogs with ease, including support for custom sorting and filtering options.
 - **Customizable Display Options**: Configure how content appears in your catalogs with various sorting and filtering options.
 
 ### 🌐 Cross-Platform Support
