@@ -11,7 +11,7 @@ export function getMDBListSearchFormHTML(userId: string): string {
   // The server will handle the check if the key is valid or not
   return `
     <div class="rounded-lg border bg-card p-6 shadow-sm mt-8">
-      <h2 class="text-xl font-semibold mb-4">Search MDBList Catalogs</h2>
+      <h2 class="text-xl font-semibold mb-4">MDBList Catalogs</h2>
       <form method="GET" action="/configure/${userId}/mdblist/search" class="grid gap-4">
         <div class="grid gap-2">
           <label for="searchQuery" class="text-sm font-medium">Search Query</label>
