@@ -11,7 +11,7 @@ export function getMDBListSearchFormHTML(userId: string): string {
   // The server will handle the check if the key is valid or not
   return `
     <div class="rounded-lg border bg-card p-6 shadow-sm mt-8">
-      <h2 class="text-xl font-semibold mb-4">Search MDBList Catalogs</h2>
+      <h2 class="text-xl font-semibold mb-4">MDBList Catalogs</h2>
       <form method="GET" action="/configure/${userId}/mdblist/search" class="grid gap-4">
         <div class="grid gap-2">
           <label for="searchQuery" class="text-sm font-medium">Search Query</label>
@@ -46,6 +46,17 @@ export function getMDBListSearchFormHTML(userId: string): string {
             <path d="M12 2v20M2 12h20"></path>
           </svg>
           View Top 100 Lists
+        </a>
+      </div>
+      <div class="mt-4">
+        <a 
+          class="text-primary hover:text-primary/80 hover:cursor-pointer text-sm flex items-center"
+          id="importMDBListWatchlistBtn"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+            <path d="M12 2v20M2 12h20"></path>
+          </svg>
+          Import Watchlist
         </a>
       </div>
     </div>

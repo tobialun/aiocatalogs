@@ -93,6 +93,9 @@ Deploy to Cloudflare's global edge network for optimal performance:
 $ git clone https://github.com/pantelx/aiocatalogs.git && cd aiocatalogs
 # Install dependencies
 $ npm i
+# Copy the example wrangler.toml file
+$ cp wrangler.toml.example wrangler.toml
+# Edit the wrangler.toml file with your own values
 # Log in to Cloudflare
 $ wrangler login
 # Create D1 database
@@ -115,6 +118,9 @@ $ git clone https://github.com/pantelx/aiocatalogs.git && cd aiocatalogs
 $ npm i
 # Build the addon
 $ npm run build
+# Copy the example wrangler.toml file
+$ cp wrangler.toml.example wrangler.toml
+# Edit the wrangler.toml file with your own values
 # Apply local migrations
 $ wrangler d1 migrations apply aiocatalogs
 # Cloudflare worker development with locally simulated D1 database
